@@ -3,18 +3,17 @@
 #include <Arduino.h>
 
 
-#define CHAR_ARR_SIZE 27
+#define CHAR_ARR_SIZE (28)
+#define DISPLAY_FRAMERATE (15)
+
+#define DISP_LATCH_PIN (12)
+#define DISP_DATA_PIN  (13)
+#define DISP_CLOCK_PIN (14)
+
+#define DISP_DIG1_PIN (15)
+#define DISP_DIG2_PIN (9)
 
 namespace Display7 {
-
-  const uint8_t latchPin = 12;
-  const uint8_t clockPin = 14;
-  const uint8_t dataPin = 13;
-
-  const uint8_t digit1 = 15;
-  const uint8_t digit2 = 1;
- 
-
 
 const uint8_t DisplayChars[CHAR_ARR_SIZE][2] = {
     {0b00000000,' '},
@@ -47,7 +46,8 @@ const uint8_t DisplayChars[CHAR_ARR_SIZE][2] = {
     
     {0b01000000,'-'},
     {0b00000001,'^'},
-    {0b00001000,'_'}
+    {0b00001000,'_'},
+    {0b10000000,'.'}
 };
 
 
@@ -55,8 +55,17 @@ const uint8_t DisplayChars[CHAR_ARR_SIZE][2] = {
   
   void setup();
   void loop();
-  void writeDisplay(uint8_t a, uint8_t b);
-  void refreshDisplay();
-  uint8_t find_char(char digit);
+  
+  
+  //void print(uint8_t indexChar1, uint8_t indexChar2); //print('I', 'n')
+  void print(const char* content);  //print("In")
+  void print(const char* content, uint8_t size, uint16_t delay);  //print("Input", 5, 200)
+  
+  void progressing(uint16_t  delay);
+  void bufferControl();
+  void clear();
+
+  void renderContent(uint8_t char1, uint8_t char2);
+  uint8_t getCharCode(const char digit);
 
 };
