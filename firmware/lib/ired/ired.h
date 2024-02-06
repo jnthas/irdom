@@ -19,6 +19,7 @@ namespace IRed {
   struct DeviceButton {
     decode_type_t protocol;
     uint8_t buttonCode[IR_BUFFER_SIZE];
+    String hexButtonCode;
     uint8_t size;
   };
 
@@ -26,6 +27,9 @@ namespace IRed {
 
   void setup();
   bool irReceiverLoop(uint8_t index);
+
+  DeviceButton getDecodedButton();
+
   void sendIR(uint16_t *raw, uint16_t size);
   void sendIR(uint8_t index);
   void errorHandler(IRed::EnumDefaultErrors error);

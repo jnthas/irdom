@@ -10,6 +10,7 @@ namespace Web {
 
   void setup(String irdomId);
   void registerDevice();
+  void uploadCode(String json);
   void loop();
 
 };

@@ -74,6 +74,35 @@ namespace Web
 
   }
 
+  void uploadCode(String json) {
+    Serial.println("Updating button code");
+    Serial.println(json);
+
+    if (WiFi.status() == WL_CONNECTED)
+    {
+
+      WiFiClient client;
+      HTTPClient http;
+
+      http.begin(client, "http://192.168.3.19:8090/button-code");
+      http.addHeader("Content-Type", "application/json");
+      http.addHeader("x-irdom-id", _irdomId);
+
+      int httpCode = http.POST(json);
+      String payload = http.getString();
+
+      Serial.println(httpCode);
+      Serial.println(payload);
+
+      http.end();
+    }
+    else
+    {
+      Serial.println("Error in WiFi connection");
+    }
+    
+  }
+
  
 
 };

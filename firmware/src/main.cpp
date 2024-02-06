@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Esp.h>
 #include <MD5Builder.h>
+#include <ArduinoJson.h>
 #include "display7.h"
 #include "ired.h"
 #include "keys.h"
@@ -20,11 +21,16 @@ ACActionEnum acAction = NONE;
 
 MD5Builder md5;
 
+
+JsonDocument doc;
+String json;
+
+
 void setup()
 {
   Serial.begin(115200);
   String irdomId = generateIrdomId();
-
+  
 
   Keys::setup();
   Display7::setup();
@@ -33,13 +39,15 @@ void setup()
   Web::setup(irdomId);
 
 
-  Serial.println("Info");
-  Serial.println(ESP.getChipId());
-  Serial.println(ESP.getResetInfo());
-  Serial.println(ESP.getSketchMD5());
-  Serial.println(ESP.getSdkVersion());
-  Serial.println(ESP.getSketchSize());
-  Serial.println(WiFi.macAddress());
+  Serial.println("irdomId: " + irdomId);
+
+  // Serial.println("Info");
+  // Serial.println(ESP.getChipId());
+  // Serial.println(ESP.getResetInfo());
+  // Serial.println(ESP.getSketchMD5());
+  // Serial.println(ESP.getSdkVersion());
+  // Serial.println(ESP.getSketchSize());
+  // Serial.println(WiFi.macAddress());
 }
 
 void loop()
@@ -62,7 +70,28 @@ void loop()
     sprintf(displayMsg, "1n%02d", channel);
     Display7::print(displayMsg, 4, 700);
     
-    IRed::irReceiverLoop(channel);
+    if (IRed::irReceiverLoop(channel)) {
+      IRed::DeviceButton d = IRed::getDecodedButton();
+
+      Serial.println("Decoded: ");
+      Serial.println(d.size);
+      Serial.println(d.protocol);
+      
+
+
+      doc[channel]["slot"] = channel;
+      doc[channel]["protocol"] = d.protocol;
+      doc[channel]["size"] = d.size;
+      doc[channel]["buttonCode"] = d.hexButtonCode;
+
+      serializeJson(doc, json);
+      serializeJson(doc, Serial);
+
+      Web::uploadCode(json);
+    }
+
+
+
   } else if (acAction == NONE) {
     Display7::progressing(750);
 
@@ -98,9 +127,8 @@ void keyHandle(Keys::EnumKeyId key, Keys::EnumKeyAction action) {
 
 String generateIrdomId() {
   md5.begin();
-  Serial.println("irdomId:");
-  Serial.println(String(ESP.getChipId()).concat("+") + WiFi.macAddress());
-  md5.add(ESP.getChipId() + "+" + WiFi.macAddress());
+  String chipId = String(ESP.getChipId());
+  md5.add(chipId + "+" + WiFi.macAddress());
   md5.calculate();
 
   return md5.toString();

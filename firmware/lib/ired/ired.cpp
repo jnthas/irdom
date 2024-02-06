@@ -8,7 +8,7 @@ namespace IRed {
   IRrecv irrecv(IR_RECV_PIN, IR_BUFFER_SIZE, IR_TIMEOUT, true);
   decode_results results;
 
-  struct DeviceButton buttons[5];
+  struct DeviceButton decodedButton;
 
 
   void setup() {
@@ -22,26 +22,26 @@ namespace IRed {
   void sendIR(uint8_t index) {
 
     Serial.print("[SEND] AirCond Type: ");
-    Serial.println(buttons[index].protocol);
+    Serial.println(decodedButton.protocol);
     //Serial.print("[SEND] Button Code: ");
-    //Serial.println(buttons[index].buttonCode, HEX);
+    //Serial.println(decodedButton.buttonCode, HEX);
     Serial.print("[SEND] Size: ");
-    Serial.println(buttons[index].size, DEC);
+    Serial.println(decodedButton.size, DEC);
 
 
 
-    bool success = irsend.send(buttons[index].protocol, buttons[index].buttonCode, buttons[index].size);
+    bool success = irsend.send(decodedButton.protocol, decodedButton.buttonCode, decodedButton.size);
 
 
     if (!success) {
       Serial.println("Error sending IR");
 
       Serial.print("[SEND] AirCond Type: ");
-      Serial.println(buttons[index].protocol);
+      Serial.println(decodedButton.protocol);
       //Serial.print("[SEND] Button Code: ");
-      //Serial.println(buttons[index].buttonCode, HEX);
+      //Serial.println(decodedButton.buttonCode, HEX);
       Serial.print("[SEND] Size: ");
-      Serial.println(buttons[index].size, DEC);
+      Serial.println(decodedButton.size, DEC);
     }
   }
 
@@ -98,17 +98,12 @@ namespace IRed {
       Serial.println(results.bits, DEC);
 
 
-      buttons[index].protocol = results.decode_type;
+      decodedButton.protocol = results.decode_type;
+      decodedButton.size = results.bits;
 
       if (hasACState(results.decode_type)) {
-
-        std::copy(std::begin(results.state), std::end(results.state), std::begin(buttons[index].buttonCode));
-
-        ///buttons[buttonIndex].buttonCode = results.state;
-        buttons[index].size = (results.bits / 8); //1 byte size
-      } else { 
-        //buttons[buttonIndex].buttonCode = results.value;
-        //buttons[buttonIndex].size = results.bits;  //1 byte size
+        decodedButton.hexButtonCode = resultToHexidecimal(&results);
+        decodedButton.size = (results.bits / 8); //1 byte size
       }
 
       return true;
@@ -121,6 +116,11 @@ namespace IRed {
   void errorHandler(IRed::EnumDefaultErrors error) {
     Serial.println("Error ");
     Serial.println(error);
+  }
+
+
+  DeviceButton getDecodedButton() {
+    return decodedButton;
   }
   
 };
