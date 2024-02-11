@@ -78,6 +78,22 @@ namespace IRed {
     }
   }
 
+
+  void setDecodedButton(int protocol, int size, String signal) {
+
+    decodedButton.protocol = static_cast<decode_type_t>(protocol);
+    decodedButton.size = size;
+    decodedButton.hexButtonCode = signal;
+
+    Serial.print("AirCond Type: ");
+    Serial.println(decodedButton.protocol);
+    Serial.print("Button Code: ");
+    Serial.println(decodedButton.hexButtonCode);
+    Serial.print("Size: ");
+    Serial.println(decodedButton.size);
+  }
+
+
   bool irReceiverLoop(uint8_t index) {
 
     if (irrecv.decode(&results)) {

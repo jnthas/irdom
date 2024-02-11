@@ -21,10 +21,8 @@ ACActionEnum acAction = NONE;
 
 MD5Builder md5;
 
-
 JsonDocument doc;
 String json;
-
 
 void setup()
 {
@@ -41,6 +39,9 @@ void setup()
 
   Serial.println("irdomId: " + irdomId);
 
+  bool success = Web::registerDevice();
+
+
   // Serial.println("Info");
   // Serial.println(ESP.getChipId());
   // Serial.println(ESP.getResetInfo());
@@ -54,6 +55,7 @@ void loop()
 {
   Keys::loop(keyHandle);
   Display7::loop();
+  Web::loop();
 
   if (acAction == SEND_IR) {
 
@@ -77,7 +79,6 @@ void loop()
       Serial.println(d.size);
       Serial.println(d.protocol);
       
-
 
       doc[channel]["slot"] = channel;
       doc[channel]["protocol"] = d.protocol;
@@ -119,8 +120,6 @@ void keyHandle(Keys::EnumKeyId key, Keys::EnumKeyAction action) {
 
     if (channel >= 5)
       channel = 0;
-
-    Web::registerDevice();
 
   }
 }

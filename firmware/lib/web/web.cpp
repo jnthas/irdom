@@ -2,13 +2,17 @@
 
 namespace Web
 {
-  String _irdomId;
+
+  String json;
+
+  String _irdomId;  //change to static fixed char[]
+
 
   void setup(String irdomId)
   {
 
     _irdomId = irdomId;
-    WiFi.begin("HUAWEI-5R42NS_HiLink", "");
+    WiFi.begin("HUAWEI-5R42NS_HiLink", "07627983");
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -17,7 +21,7 @@ namespace Web
   }
 
 
-  void registerDevice() {
+  bool registerDevice() {
     Serial.println("Registering device");
 
     if (WiFi.status() == WL_CONNECTED)
@@ -30,48 +34,21 @@ namespace Web
       http.addHeader("Content-Type", "text/plain");
       http.addHeader("x-irdom-id", _irdomId);
 
-      int httpCode = http.PATCH("");
-      String payload = http.getString();
 
-      Serial.println(httpCode);
+      int httpCode = http.PATCH("");
+      Serial.printf("Response code: %d\n", httpCode);
+      String payload = http.getString();
       Serial.println(payload);
 
       http.end();
-    }
-    else
-    {
-      Serial.println("Error in WiFi connection");
+      return (httpCode == 200);
     }
 
+    return false;
   }
 
   void loop()
   {
-
-    Serial.println("Requesting...");
-
-    if (WiFi.status() == WL_CONNECTED)
-    {
-
-      WiFiClient client;
-      HTTPClient http;
-
-      http.begin(client, "http://192.168.3.19:8090/api/hello");
-      http.addHeader("Content-Type", "text/plain");
-
-      int httpCode = http.GET();
-      String payload = http.getString();
-
-      Serial.println(httpCode);
-      Serial.println(payload);
-
-      http.end();
-    }
-    else
-    {
-      Serial.println("Error in WiFi connection");
-    }
-
   }
 
   void uploadCode(String json) {

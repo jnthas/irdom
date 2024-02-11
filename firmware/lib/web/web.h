@@ -4,12 +4,15 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <ArduinoJson.h>
+
+#include "ired.h"
 
 
 namespace Web {
 
   void setup(String irdomId);
-  void registerDevice();
+  bool registerDevice();
   void uploadCode(String json);
   void loop();
 
