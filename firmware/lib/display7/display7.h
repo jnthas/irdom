@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 
-#define CHAR_ARR_SIZE (28)
+#define CHAR_ARR_SIZE (29)
 #define DISPLAY_FRAMERATE (15)
 
 #define DISP_LATCH_PIN (12)
@@ -40,6 +40,8 @@ const uint8_t DisplayChars[CHAR_ARR_SIZE][2] = {
     {0b01010100,'n'},
     {0b01011000,'c'},
     {0b01110100,'h'},
+    
+    {0b01010000,'r'},
     
     {0b00011100,'u'},
     {0b01111000,'t'},

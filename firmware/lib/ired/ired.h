@@ -5,6 +5,7 @@
 #include <IRsend.h>
 #include <IRrecv.h>
 #include <IRutils.h>
+#include "errorhandler.h"
 
 
 #define IR_LED_PIN (4)
@@ -13,8 +14,6 @@
 #define IR_TIMEOUT (50)
 
 namespace IRed {
-
-  enum EnumDefaultErrors { BufferOverflow };
 
   struct DeviceButton {
     decode_type_t protocol;
@@ -33,7 +32,6 @@ namespace IRed {
   void sendIR(uint16_t *raw, uint16_t size);
   void sendIR(uint8_t index);
   void sendIR(IRed::DeviceButton deviceButton);
-  void errorHandler(IRed::EnumDefaultErrors error);
   void setDecodedButton(int protocol, int size, String signal);
 
 };

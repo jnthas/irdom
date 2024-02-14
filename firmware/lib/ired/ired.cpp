@@ -31,7 +31,7 @@ namespace IRed {
     bool success = irsend.send(decodedButton.protocol, decodedButton.buttonCode, decodedButton.size);
 
     if (!success) {
-      Serial.println("Error sending IR");
+      ErrorHandler::handleError(ErrorHandler::IR_SEND_SIGNAL_ERROR, "Error sending IR");
 
       Serial.print("[SEND] AirCond Type: ");
       Serial.println(decodedButton.protocol);
@@ -61,7 +61,7 @@ namespace IRed {
 
 
     if (!success) {
-      Serial.println("Error sending IR");
+      ErrorHandler::handleError(ErrorHandler::IR_SEND_SIGNAL_ERROR, "Error sending IR");
     }
 
   }
@@ -88,7 +88,7 @@ namespace IRed {
 
 
     if (!success) {
-      Serial.println("Error sending IR");
+      ErrorHandler::handleError(ErrorHandler::IR_SEND_SIGNAL_ERROR, "Error sending IR");
 
       Serial.print("[SEND] AirCond Type: ");
       Serial.println(results.decode_type);
@@ -121,7 +121,7 @@ namespace IRed {
       
       // Check if we got an IR message that was to big for our capture buffer.
       if (results.overflow)
-        errorHandler(EnumDefaultErrors::BufferOverflow);
+        ErrorHandler::handleError(ErrorHandler::IR_BUFFER_OVERFLOW);
 
       // Display the basic output of what we found.
       //Serial.print(resultToHumanReadableBasic(&results));
@@ -148,13 +148,6 @@ namespace IRed {
 
     return false;
   }
-
-
-  void errorHandler(IRed::EnumDefaultErrors error) {
-    Serial.println("Error ");
-    Serial.println(error);
-  }
-
 
   DeviceButton getDecodedButton() {
     return decodedButton;

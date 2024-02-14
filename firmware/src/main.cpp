@@ -6,6 +6,7 @@
 #include "ired.h"
 #include "keys.h"
 #include "web.h"
+#include "errorhandler.h"
 
 unsigned long currentMillis = 0;
 
@@ -16,6 +17,9 @@ char displayMsg[8];
 void keyHandle(Keys::EnumKeyId key, Keys::EnumKeyAction action);
 void checkSchedule();
 String generateIrdomId();
+
+
+
 
 
 enum ACActionEnum
@@ -47,7 +51,7 @@ void setup()
   bool success = Web::registerDevice();
 
   if (!success) {
-    Serial.println("Failed registering device!!!");
+    ErrorHandler::handleError(ErrorHandler::BACKEND_REGISTER_FAILED, "Failed registering device!!!");
   }
 
   // Serial.println("Info");

@@ -47,6 +47,8 @@ namespace Web
       }
 
       http.end();
+    } else {
+      ErrorHandler::handleError(ErrorHandler::WIFI_OFFLINE, "Device not connected");
     }
 
     return httpCode;    
