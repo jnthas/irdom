@@ -28,10 +28,7 @@ namespace IRed {
     Serial.print("[SEND] Size: ");
     Serial.println(decodedButton.size, DEC);
 
-
-
     bool success = irsend.send(decodedButton.protocol, decodedButton.buttonCode, decodedButton.size);
-
 
     if (!success) {
       Serial.println("Error sending IR");
@@ -43,6 +40,30 @@ namespace IRed {
       Serial.print("[SEND] Size: ");
       Serial.println(decodedButton.size, DEC);
     }
+  }
+
+  void sendIR(IRed::DeviceButton deviceButton) {
+
+    Serial.print("[SEND] AirCond Type: ");
+    Serial.println(deviceButton.protocol);
+    Serial.print("[SEND] HEX Button Code: ");
+    Serial.println(deviceButton.hexButtonCode);
+    Serial.print("[SEND] Size: ");
+    Serial.println(deviceButton.size);
+
+    Serial.print("[SEND] Button Code: ");
+    for (int i =0; i<deviceButton.size; i++) {
+      Serial.print(deviceButton.buttonCode[i], HEX);
+    }
+  
+
+    bool success = irsend.send(deviceButton.protocol, deviceButton.buttonCode, deviceButton.size);
+
+
+    if (!success) {
+      Serial.println("Error sending IR");
+    }
+
   }
 
 

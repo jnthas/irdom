@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	//"os"
+	"os"
     //"strconv"
     "net/http"
     "fmt"
@@ -38,20 +38,19 @@ func cookieAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 func main() {
     app := pocketbase.New()
 
-
     app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
         e.Router.PATCH("/register", func(c echo.Context) error {
             
             ///payload := apis.RequestInfo(c).Data
-            irdomId := c.Request().Header.Get("x-irdom-id")
+            deviceId := c.Request().Header.Get("x-irdom-id")
 
-            if (len(irdomId) == 0) {
+            if (len(deviceId) == 0) {
                 return apis.NewBadRequestError("Invalid device", nil)
             }
             
             record, err := app.Dao().FindFirstRecordByFilter(
-                "devices", "irdomId = {:irdomId}",
-                dbx.Params{ "irdomId": irdomId },
+                "devices", "deviceId = {:deviceId}",
+                dbx.Params{ "deviceId": deviceId },
             )
 
             if err != nil {
@@ -61,7 +60,7 @@ func main() {
                 }
 
                 record = models.NewRecord(collection)
-                record.Set("irdomId", irdomId)
+                record.Set("deviceId", deviceId)
 
                 if err := app.Dao().SaveRecord(record); err != nil {
                     return err
@@ -76,7 +75,7 @@ func main() {
             }
             
             
-            return c.JSON(http.StatusOK, map[string]any{"irdomId": record.GetString("irdomId"), "codes": record.Get("codes")})
+            return c.JSON(http.StatusOK, map[string]any{"deviceId": record.GetString("deviceId"), "codes": record.Get("codes")})
         })
     
         return nil
@@ -104,15 +103,15 @@ func main() {
 
             
             ///payload := apis.RequestInfo(c).Data
-            irdomId := c.Request().Header.Get("x-irdom-id")
+            deviceId := c.Request().Header.Get("x-irdom-id")
 
-            if (len(irdomId) == 0) {
+            if (len(deviceId) == 0) {
                 return apis.NewBadRequestError("Invalid device", nil)
             }
             
             record, err := app.Dao().FindFirstRecordByFilter(
-                "devices", "irdomId = {:irdomId}",
-                dbx.Params{ "irdomId": irdomId },
+                "devices", "deviceId = {:deviceId}",
+                dbx.Params{ "deviceId": deviceId },
             )
 
             if err != nil {
@@ -130,6 +129,69 @@ func main() {
             return c.String(http.StatusOK, "OK")
         })
     
+        return nil
+    })
+
+
+    app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+        e.Router.GET("/schedule", func(c echo.Context) error {
+            
+            ///payload := apis.RequestInfo(c).Data
+            deviceId := c.Request().Header.Get("x-irdom-id")
+
+            if (len(deviceId) == 0) {
+                return apis.NewBadRequestError("Invalid device", nil)
+            }
+
+            records := []*models.Record{}
+
+            query := app.Dao().RecordQuery("schedule").
+                InnerJoin("devices", dbx.NewExp("devices.id = schedule.deviceId")).    
+                Where(dbx.NewExp("devices.deviceId = {:deviceId}", dbx.Params{ "deviceId": deviceId })).
+                AndWhere(dbx.HashExp{"schedule.acknowledged": false}).
+                OrderBy("schedule.created DESC")
+
+            if err := query.All(&records); err == nil {
+                if (len(records) > 0) {
+
+                    schedule, err := app.Dao().FindRecordById("schedule", records[0].GetString("id"))
+
+                    if (err != nil) {
+                        return err
+                    }
+
+                    schedule.Set("acknowledged", true)
+                    if err := app.Dao().SaveRecord(schedule); err != nil {
+                        return err
+                    }
+
+                    if errs := app.Dao().ExpandRecord(records[0], []string{"code"}, nil); len(errs) > 0 {
+                        return fmt.Errorf("failed to expand: %v", errs)
+                    }
+                    
+                    return c.JSON(http.StatusOK, map[string]any{
+                        "slot": records[0].ExpandedOne("code").GetInt("slot"),
+                        "protocol": records[0].ExpandedOne("code").GetInt("protocol"), 
+                        "size":records[0].ExpandedOne("code").GetInt("size"),
+                        "signal": records[0].ExpandedOne("code").GetString("signal"),
+                    })
+
+
+                }
+            }
+
+            return apis.NewNotFoundError("No scheduled codes", records)
+        })
+    
+        return nil
+    })
+
+
+
+
+    // serves static files from the provided public dir (if exists)
+    app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+        e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
         return nil
     })
 

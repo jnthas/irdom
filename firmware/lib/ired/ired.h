@@ -32,6 +32,7 @@ namespace IRed {
 
   void sendIR(uint16_t *raw, uint16_t size);
   void sendIR(uint8_t index);
+  void sendIR(IRed::DeviceButton deviceButton);
   void errorHandler(IRed::EnumDefaultErrors error);
   void setDecodedButton(int protocol, int size, String signal);
 
