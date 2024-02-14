@@ -46,6 +46,10 @@ void setup()
 
   bool success = Web::registerDevice();
 
+  if (!success) {
+    Serial.println("Failed registering device!!!");
+  }
+
   // Serial.println("Info");
   // Serial.println(ESP.getChipId());
   // Serial.println(ESP.getResetInfo());
@@ -96,7 +100,7 @@ void loop()
       serializeJson(doc, json);
       serializeJson(doc, Serial);
 
-      Web::uploadCode(json);
+      Web::uploadCode(json.c_str());
     }
   }
   else if (acAction == NONE)

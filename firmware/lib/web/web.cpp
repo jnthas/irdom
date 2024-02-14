@@ -21,9 +21,9 @@ namespace Web
     Serial.println(WiFi.localIP());
   }
 
-  int querySchedule(String &payload)
-  {
-    Serial.println("Querying schedule");
+
+  int makeRequest(const char *type, const char *path, const char *payload, String &response) {
+
     int httpCode = 0;
 
     if (WiFi.status() == WL_CONNECTED)
@@ -32,17 +32,32 @@ namespace Web
       WiFiClient client;
       HTTPClient http;
 
-      http.begin(client, "http://192.168.3.19:8090/schedule");
-      http.addHeader("Content-Type", "text/plain");
+      String url = "http://192.168.3.19:8090/" + String(path);
+
+      http.begin(client, url);
+      http.addHeader("Content-Type", "application/json");
       http.addHeader("x-irdom-id", _irdomId);
 
-      httpCode = http.GET();
+      httpCode = http.sendRequest(type, payload);
       Serial.printf("Response code: %d\n", httpCode);
-      payload = http.getString();
-      Serial.println(payload);
+
+      if (httpCode > 0) {
+        response = http.getString();
+        Serial.println(response);
+      }
 
       http.end();
     }
+
+    return httpCode;    
+  }
+
+
+  int querySchedule(String &payload)
+  {
+    Serial.println("Querying schedule");
+
+    int httpCode = makeRequest("GET", "schedule", "", payload);
 
     return httpCode;
   }
@@ -51,59 +66,24 @@ namespace Web
   {
     Serial.println("Registering device");
 
-    if (WiFi.status() == WL_CONNECTED)
-    {
+    String response;
+    int httpCode = makeRequest("PATCH", "register", "", response);
 
-      WiFiClient client;
-      HTTPClient http;
-
-      http.begin(client, "http://192.168.3.19:8090/register");
-      http.addHeader("Content-Type", "text/plain");
-      http.addHeader("x-irdom-id", _irdomId);
-
-      int httpCode = http.PATCH("");
-      Serial.printf("Response code: %d\n", httpCode);
-      String payload = http.getString();
-      Serial.println(payload);
-
-      http.end();
-      return (httpCode == 200);
-    }
-
-    return false;
+    return (httpCode == 200);
   }
 
   void loop()
   {
   }
 
-  void uploadCode(String json)
+  bool uploadCode(const char *json)
   {
     Serial.println("Updating button code");
-    Serial.println(json);
 
-    if (WiFi.status() == WL_CONNECTED)
-    {
+    String response;
+    int httpCode = makeRequest("POST", "button-code", json, response);
 
-      WiFiClient client;
-      HTTPClient http;
-
-      http.begin(client, "http://192.168.3.19:8090/button-code");
-      http.addHeader("Content-Type", "application/json");
-      http.addHeader("x-irdom-id", _irdomId);
-
-      int httpCode = http.POST(json);
-      String payload = http.getString();
-
-      Serial.println(httpCode);
-      Serial.println(payload);
-
-      http.end();
-    }
-    else
-    {
-      Serial.println("Error in WiFi connection");
-    }
+    return (httpCode == 200);
   }
 
 };

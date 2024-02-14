@@ -15,7 +15,7 @@ namespace Web {
 
   void setup(String irdomId);
   bool registerDevice();
-  void uploadCode(String json);
+  bool uploadCode(const char *json);
   void loop();
 
   int querySchedule(String &payload);
